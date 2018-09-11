@@ -18,7 +18,7 @@ ActiveRecord::Schema.define(version: 2018_09_10_215735) do
     t.string "kind"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["kind"], name: "index_adjustments_on_kind", unique: true
+    t.index ["kind"], name: "index_adjustments_on_kind"
   end
 
 end
