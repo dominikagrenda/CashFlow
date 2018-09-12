@@ -2,28 +2,26 @@ class AdjustmentsController < ApplicationController
   def create
     adjustment = Adjustment.new(adjustment_params)
     if adjustment.save
-      render json: serialize_adjustment(adjustment)
+      render json: serialize_adjustment(adjustment).serialized_json
     else
       render json: adjustment.errors, status: 400
     end
   end
 
-  def count_expenses
-    expenses = Adjustment.where(kind: "expense")
-    if expenses != nil
-      render json: serialize_adjustment(expenses)
-    else
-      render json: expenses.errors, status: 400
-    end
-  end
+  def index
+    expenses = Adjustment.where(kind: "expense").sum(:value)
+    income = Adjustment.where(kind: "income").sum(:value)
+    balance = income - expenses
+    adjustments = Adjustment.all
 
-  def count_income
-    income = Adjustment.where(kind: "income")
-    if income != nil
-      render json: serialize_adjustment(income)
-    else
-      render json: income.errors, status: 400
-    end
+    counted_values = {expenses: expenses, income: income, balance: balance}
+
+    payload = serialize_adjustment(adjustments)
+      .serializable_hash
+      .merge(counted_values)
+      .to_json
+
+    render json: payload
   end
 
   private
@@ -33,6 +31,6 @@ class AdjustmentsController < ApplicationController
   end
 
   def serialize_adjustment(adjustment)
-    AdjustmentSerializer.new(adjustment.reload).serialized_json
+    AdjustmentSerializer.new(adjustment.reload)
   end
 end
